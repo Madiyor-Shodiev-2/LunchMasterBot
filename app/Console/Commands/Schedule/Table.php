@@ -30,10 +30,11 @@ class Table extends Command
         $handleAction = new HandleTableAction();
 
         $handleAction->getHandleTable(
-            $this,
-            new LunchSchedule(),
-            ['ID', 'name', 'hour', 'minute', 'max_per_round', 'active'],
-            ['schedule_id', 'name', 'hour', 'minute', 'max_per_round', 'active']
+               $this,
+                new LunchSchedule(),
+            'schedule_id',
+               ['ID', 'name', 'hour', 'minute', 'max_per_round', 'active'],
+                  ['schedule_id', 'name', 'hour', 'minute', 'max_per_round', 'active']
         );
     }
 }
