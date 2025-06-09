@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('operators', function (Blueprint $table) {
             $table->bigInteger('operator_id')->autoIncrement()->primary();
+            $table->bigInteger('telegram_id')->unique();
             $table->string('username', 255);
             $table->string('fullname', 255);
             $table->boolean('is_supervisor')->default(false);

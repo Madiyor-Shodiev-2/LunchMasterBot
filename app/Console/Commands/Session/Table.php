@@ -32,6 +32,7 @@ class Table extends Command
         $handleAction->getHandleTable(
             $this,
             $method,
+            'session_id',
             ['ID', 'schedule-id', 'date', 'status', 'created_at'],
             ['session_id', 'schedule_id', 'date', 'status', 'created_at']
         );

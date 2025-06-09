@@ -34,8 +34,9 @@ class OperatorsTable extends Command
         $handleAction->getHandleTable(
             $this,
             $method,
-            ['operator_id', 'username', 'full_name', 'is_supervisor', 'joined_at'],
-            ['operator_id', 'username', 'fullname', 'is_supervisor', 'created_at']
+            'operator_id',
+            ['operator_id', 'telegram_id', 'username', 'full_name', 'is_supervisor', 'joined_at'],
+        ['operator_id', 'telegram_id', 'username', 'fullname', 'is_supervisor', 'created_at']
         );
     }
 }

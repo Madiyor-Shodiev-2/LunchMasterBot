@@ -40,7 +40,9 @@ return [
              */
             'allowed_updates' => null,
             'commands' => [
-                App\Bot\Commands\StartCommand::class
+                App\Bot\Commands\StartCommand::class,
+                App\Bot\Commands\JoinCommand::class,
+                App\Bot\Commands\LunchCommand::class,
             ],
         ],
 

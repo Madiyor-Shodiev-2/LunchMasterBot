@@ -31,6 +31,7 @@ class Table extends Command
         $handleAction->getHandleTable(
             $this,
             new QueueEntry(),
+            'entry_id',
             ['ID', 'session-id', 'operator-id',  'joined_at', 'position', 'status'],
             ['entry_id', 'session_id', 'operator_id', 'created_at', 'position', 'status']
         );
