@@ -12,10 +12,8 @@ class LunchCommand extends Command
 
     public function handle(): void
     {
+        $userChatId = $this->getUpdate()->getMessage()->getChat()->getId();
 
-        $chatId = $this->getUpdate()->getMessage()->getChat()->getId();
-
-        TelegramCommandAction::joinToQueue($this, $chatId);
-        
+        TelegramCommandAction::joinToQueue($this, $userChatId);   
     }
 }

@@ -16,55 +16,55 @@ class WebhookController extends Controller
 
         Telegram::commandsHandler(true);
 
-        if (! $cq = $update->getCallbackQuery()) {
+        if (! $inlineBtn = $update->getCallbackQuery()) {
             return response('OK', 200);
         }
 
-        [$action, $sessionId] = explode(':', $cq->getData(), 2);
+        [$action, $sessionId] = explode(':', $inlineBtn->getData(), 2);
 
         if ($action === 'join') {
-            $this->handleJoin($cq, (int)$sessionId);
+            $this->handleJoin($inlineBtn, (int)$sessionId);
         }
 
         return response('OK', 200);
     }
 
-    private function handleJoin($cq, int $sessionId): void
+    private function handleJoin($inlineBtn, int $sessionId): void
     {
-        $session = LunchSession::findOrFail($sessionId);
+        $lunchSession = LunchSession::findOrFail($sessionId);
 
-        $telegramId = $cq->getFrom()->getId();
+        $telegramId = $inlineBtn->getFrom()->getId();
 
         $operator = Operator::firstWhere('telegram_id', $telegramId);
 
-        if ($operator && ! $session->operators()->where('telegram_id', $telegramId)->exists()) {
+        if ($operator && ! $lunchSession->operators()->where('telegram_id', $telegramId)->exists()) {
 
-            $nextPosition = $session
+            $nextPosition = $lunchSession
                 ->operators()
                 ->withPivot('position')
                 ->get()
                 ->max('pivot.position') + 1;
 
-            $session->operators()->attach($operator->operator_id, [
+            $lunchSession->operators()->attach($operator->operator_id, [
                 'position' => $nextPosition,
                 'status'   => 'waiting'
             ]);
         }
 
         Telegram::answerCallbackQuery([
-            'callback_query_id' => $cq->getId(),
+            'callback_query_id' => $inlineBtn->getId(),
             'text'              => 'Вы записаны!',
         ]);
 
-        $msg    = $cq->getMessage();
-        $text   = $msg->getText();
-        $taken  = $session->operators()->count();
-        $max    = $session->schedule->max_per_round;
-        $newTxt = preg_replace('/Записано: \d+ из \d+/', "Записано: {$taken} из {$max}", $text);
+        $inlineBtnMsg  = $inlineBtn->getMessage();
+        $inlineBtnText = $inlineBtnMsg->getText();
+        $joinsPerson   = $lunchSession->operators()->count();
+        $maxPerson     = $lunchSession->schedule->max_per_round;
+        $newTxt        = preg_replace('/Записано: \d+ из \d+/', "Записано: {$joinsPerson} из {$maxPerson}", $inlineBtnText);
 
         Telegram::editMessageText([
-            'chat_id'    => $msg->getChat()->getId(),
-            'message_id' => $msg->getMessageId(),
+            'chat_id'    => $inlineBtnMsg->getChat()->getId(),
+            'message_id' => $inlineBtnMsg->getMessageId(),
             'text'       => $newTxt,
             'parse_mode' => 'HTML',
         ]);

@@ -13,88 +13,92 @@ class TelegramCommandAction
 { 
     public static function operatorStore(Command $command)
     {
-        $chatId = $command->getUpdate()->getMessage()->getChat()->getId();
+        $personChatId = $command->getUpdate()->getMessage()->getChat()->getId();
 
         try {
 
-            $message = $command->getUpdate()->getMessage();
-            $from    = $message->getFrom();
+            $message  = $command->getUpdate()->getMessage();
+            $from     = $message->getFrom();
+            
+            $userName     = $from->getUsername() ?? 'not username';
+            $userFullName = (($from->getFirstName() ?? '') . ' ' . ($from->getLastName() ?? '')) ?? 'no name';
 
             $attributes = [
                 'telegram_id' => $from->getId(),
             ];
 
             $values = [
-                'username'    => $from->getUsername() ?? 'not username',
-                'fullname'    => (($from->getFirstName() ?? '') . ' ' . ($from->getLastName() ?? '')) ?? 'no name'
+                'username' => $userName,
+                'fullname' => $userFullName
             ];
 
-            $user = Operator::updateOrCreate(
+            Operator::updateOrCreate(
                 $attributes,
                 $values
             );
 
         } catch (\Exception $exception) {
             $command->replyWithMessage([
-                "chat_id" => $chatId,
+                "chat_id" => $personChatId,
                 "text"    => "Произошло внутренняя ошибка, пожалуйста повторите попытку позже"
             ]);
         } finally {
             $command->replyWithMessage([
-                "chat_id" => $chatId,
-                "text"    => "Привет {$user->fullname}!. Вы успешно зарегистрировались на ланч, введите команду /lunch чтобы присоединиться к доступным ланчам!"
+                "chat_id" => $personChatId,
+                "text"    => "Привет {$userFullName}!. Вы успешно зарегистрировались на ланч, введите команду /lunch чтобы присоединиться к доступным сессии!"
             ]);
         }
     } 
 
-    public static function joinToQueue(Command $command, $chatId){
+    public static function joinToQueue(Command $command, $userChatId){
         try {
-            $today = Carbon::today('Asia/Tashkent')->toDateString();
+            $sessionToday = Carbon::today('Asia/Tashkent')->toDateString();
 
-            $sessions = LunchSession::with('schedule', 'operators')
-                ->where('date', $today)
+            $lunchSessions = LunchSession::with('schedule', 'operators')
+                ->where('date', $sessionToday)
                 ->get();
 
-            if ($sessions->isEmpty()) {
+            if ($lunchSessions->isEmpty()) {
                 $command->replyWithMessage([
-                    'chat_id' => $chatId,
+                    'chat_id' => $userChatId,
                     'text'    => 'На сегодня нет доступных ланч-сессий.',
                 ]);
                 return;
             }
-            foreach ($sessions as $session) {
+            foreach ($lunchSessions as $lunchSession) {
 
-                $sched = $session->schedule;
-                $taken = $session->operators->count();
-                $max   = $sched->max_per_round;
-                $time  = gmdate('H:i', $sched->hour);
+                $sessionSchedule = $lunchSession->schedule;
+                $joinsPerson     = $lunchSession->operators->count();
+                $maxPerson       = $sessionSchedule->max_per_round;
+                $sessionTime     = gmdate('H:i', $sessionSchedule->hour);
 
-                $text = "🕒 <b>{$sched->name}</b>\n"
-                    . "Время: {$time}\n"
-                    . "Записано: {$taken} из {$max}";
+                $text = "🕒 <b>{$sessionSchedule->name}</b>\n"
+                    . "Время: {$sessionTime}\n"
+                    . "Записано: {$joinsPerson} из {$maxPerson}";
 
 
-                $kb = Keyboard::make();  // возвращает экземпляр Keyboard
+                $keyboard = Keyboard::make();  // возвращает экземпляр Keyboard
 
-                $button = $kb
+                $joinButton = $keyboard
                     ->inline()                        // ставим клавиатуру в inline-режим
                     ->row([
-                        $kb->inlineButton([          // обёрнуто в массив!
+                        $keyboard->inlineButton([          // обёрнуто в массив!
                             'text'          => '✅ Присоединиться',
-                            'callback_data' => "join:{$session->session_id}",
+                            'callback_data' => "join:{$lunchSession->session_id}",
                         ]),
                     ]);
 
                 $command->replyWithMessage([
-                    "chat_id"      => $chatId,
+                    "chat_id"      => $userChatId,
                     "text"         => $text,
                     "parse_mode"   => 'HTML',
-                    'reply_markup' => $button
+                    'reply_markup' => $joinButton
                 ]);
+                
             }
         } catch (\Exception $exception) {
             $command->replyWithMessage([
-                "chat_id"      => $chatId,
+                "chat_id"      => $userChatId,
                 "text"         => "Произошло внутреняя ошибка!",
             ]);
         }
