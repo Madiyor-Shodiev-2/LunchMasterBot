@@ -33,8 +33,8 @@ class Table extends Command
                $this,
                 new LunchSchedule(),
             'schedule_id',
-               ['ID', 'name', 'hour', 'minute', 'max_per_round', 'active'],
-                  ['schedule_id', 'name', 'hour', 'minute', 'max_per_round', 'active']
+               ['ID', 'group_id', 'hour', 'minute', 'max_per_round', 'active'],
+                  ['schedule_id', 'group_id', 'hour', 'minute', 'max_per_round', 'active']
         );
     }
 }

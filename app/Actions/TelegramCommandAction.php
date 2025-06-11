@@ -2,12 +2,12 @@
 
 namespace App\Actions;
 
-use Telegram\Bot\Commands\Command;
-use App\Models\Operator;
-use Telegram\Bot\Keyboard\Keyboard;
-use Carbon\Carbon;
-use App\Models\LunchSession;
 use Illuminate\Support\Facades\Log;
+use Telegram\Bot\Commands\Command;
+use Telegram\Bot\Keyboard\Keyboard;
+use App\Models\LunchSession;
+use App\Models\Operator;
+use Carbon\Carbon;
 
 class TelegramCommandAction
 { 
@@ -51,56 +51,99 @@ class TelegramCommandAction
     } 
 
     public static function joinToQueue(Command $command, $userChatId){
-        try {
-            $sessionToday = Carbon::today('Asia/Tashkent')->toDateString();
 
-            $lunchSessions = LunchSession::with('schedule', 'operators')
-                ->where('date', $sessionToday)
-                ->get();
+        $isRegistered = self::hasOperator($userChatId);
 
-            if ($lunchSessions->isEmpty()) {
-                $command->replyWithMessage([
-                    'chat_id' => $userChatId,
-                    'text'    => 'На сегодня нет доступных ланч-сессий.',
-                ]);
-                return;
-            }
-            foreach ($lunchSessions as $lunchSession) {
+        if($isRegistered){
+            try {
+                $sessionToday = Carbon::today('Asia/Tashkent')->toDateString();
 
-                $sessionSchedule = $lunchSession->schedule;
-                $joinsPerson     = $lunchSession->operators->count();
-                $maxPerson       = $sessionSchedule->max_per_round;
-                $sessionTime     = gmdate('H:i', $sessionSchedule->hour);
-
-                $text = "🕒 <b>{$sessionSchedule->name}</b>\n"
-                    . "Время: {$sessionTime}\n"
-                    . "Записано: {$joinsPerson} из {$maxPerson}";
-
-
-                $keyboard = Keyboard::make();  // возвращает экземпляр Keyboard
-
-                $joinButton = $keyboard
-                    ->inline()                        // ставим клавиатуру в inline-режим
-                    ->row([
-                        $keyboard->inlineButton([          // обёрнуто в массив!
-                            'text'          => '✅ Присоединиться',
-                            'callback_data' => "join:{$lunchSession->session_id}",
-                        ]),
+                $lunchSessions = self::getLunchSession($sessionToday);
+    
+                if ($lunchSessions->isEmpty()) {
+                    $command->replyWithMessage([
+                        'chat_id' => $userChatId,
+                        'text'    => 'На сегодня нет доступных ланч-сессий.',
                     ]);
+                    return;
+                }
 
+                foreach ($lunchSessions as $lunchSession) {
+
+                    $sessionGroupName = $lunchSession->group->name;
+                    $sessionSchedule  = $lunchSession->schedule;
+                    $joinsPerson      = $lunchSession->operators->count();
+                    $maxPerson        = $sessionSchedule->max_per_round;
+                    $sessionTime      = $sessionSchedule->hour;
+    
+                    $text = "🕒 <b>{$sessionGroupName}</b>\n"
+                        . "Время: {$sessionTime}\n"
+                        . "Записано: {$joinsPerson} из {$maxPerson}";
+    
+    
+                    $keyboard = Keyboard::make();  // возвращает экземпляр Keyboard
+    
+                    $joinButton = $keyboard
+                        ->inline()                        // ставим клавиатуру в inline-режим
+                        ->row([
+                            $keyboard->inlineButton([          // обёрнуто в массив!
+                                'text'          => '✅ Присоединиться',
+                                'callback_data' => "join:{$lunchSession->session_id}",
+                            ]),
+                        ]);
+    
+                    $command->replyWithMessage([
+                        "chat_id"      => $userChatId,
+                        "text"         => $text,
+                        "parse_mode"   => 'HTML',
+                        'reply_markup' => $joinButton
+                    ]);
+                    
+                }
+
+            } catch (\Exception $exception) {
                 $command->replyWithMessage([
                     "chat_id"      => $userChatId,
-                    "text"         => $text,
-                    "parse_mode"   => 'HTML',
-                    'reply_markup' => $joinButton
+                    "text"         => "Произошло внутреняя ошибка!",
                 ]);
-                
             }
-        } catch (\Exception $exception) {
+        } else {
             $command->replyWithMessage([
-                "chat_id"      => $userChatId,
-                "text"         => "Произошло внутреняя ошибка!",
+                "chat_id" => $userChatId,
+                "text"    => "Привет, сегодня вас нет в списке. Если вы впервые тут или еще не добавились к сегоднящный сессии:\nПожалуйста используете команду /join."
             ]);
         }
+
+    }
+
+    public static function operatorDayStatus(Command $command, $userChatId)
+    {        
+        $isRegistered = self::hasOperator($userChatId);
+
+        if($isRegistered){
+            $command->replyWithMessage([
+                "chat_id" => $userChatId,
+                "text"    => "Привет, вы успешно уже зарегистрировались"
+            ]);
+        } else {
+            $command->replyWithMessage([
+                "chat_id" => $userChatId,
+                "text"    => "Привет, сегодня вас нет в списке. Если вы впервые тут или еще не добавились к сегоднящный сессии:\nПожалуйста используете команду /join."
+            ]);
+        }
+    }
+
+    private static function hasOperator(int $userChatId)
+    {
+        return Operator::where('telegram_id', $userChatId)
+            ->whereDate('created_at', Carbon::today())
+            ->exists();
+    }
+
+    private static function getLunchSession($sessionToday)
+    {
+        return LunchSession::with('schedule', 'operators')
+            ->where('date', $sessionToday)
+            ->get();
     }
 }
