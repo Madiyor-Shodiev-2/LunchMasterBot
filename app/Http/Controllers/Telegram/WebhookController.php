@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LunchSession;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use App\Models\Operator;
+use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {

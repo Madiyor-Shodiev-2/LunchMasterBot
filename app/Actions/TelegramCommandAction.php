@@ -115,7 +115,6 @@ class TelegramCommandAction
         }
 
     }
-
     public static function operatorDayStatus(Command $command, $userChatId)
     {        
         $isRegistered = self::hasOperator($userChatId);

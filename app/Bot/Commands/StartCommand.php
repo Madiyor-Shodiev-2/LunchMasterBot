@@ -2,6 +2,8 @@
 
 namespace App\Bot\Commands;
 
+use App\Actions\TelegramCommandAction;
+use App\Actions\TelegramMessageAction;
 use Telegram\Bot\Commands\Command;
 
 class StartCommand extends Command
@@ -13,11 +15,6 @@ class StartCommand extends Command
     {
         $chatId = $this->getUpdate()->getMessage()->getChat()->getId();
 
-        $this->replyWithMessage([
-            "chat_id" => $chatId,
-            "text"    => "Привет! Я LunchMasterBot. Я помогу тебе встать в очередь на обед:\n" .
-                "/lunch — записаться в очередь\n" .
-                "/queue — посмотреть очередь"
-        ]);
+        TelegramMessageAction::sendMessageSituation($this, $chatId);
     }
 }
