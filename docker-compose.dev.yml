@@ -1,0 +1,54 @@
+services:
+  queue_telegram:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.dev
+    container_name: queue-telegram-bot
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "9000:9000"
+    environment:
+      - APP_ENV=local
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      - telegram-network
+
+  webserver:
+    image: nginx:1.27-alpine
+    container_name: queue-telegram-webserver
+    depends_on:
+      - queue_telegram
+    ports:
+      - "8181:80"
+    volumes:
+      - /home/madiyor/Telegram:/var/www/html
+      - /home/madiyor/Telegram/docker/conf.d:/etc/nginx/conf.d
+    networks:
+      - telegram-network
+  
+  postgresql:
+    image: postgres:17-alpine
+    container_name: queue-telegram-postgresql
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    networks:
+      - telegram-network
+
+volumes:
+  dbdata:
+
+networks:
+  telegram-network:
+    driver: bridge

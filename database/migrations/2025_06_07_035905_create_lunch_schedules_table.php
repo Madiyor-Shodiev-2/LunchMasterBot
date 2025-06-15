@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('lunch_schedules', function (Blueprint $table) {
             $table->id('schedule_id')->autoIncrement()->primary();
-            $table->string('name', 255)->nullable();
+            $table->foreignId('group_id')->constrained('groups')->references('group_id');
             $table->integer('hour')->nullable()->unique();
             $table->integer('minute')->default(0);
             $table->integer('max_per_round')->nullable();

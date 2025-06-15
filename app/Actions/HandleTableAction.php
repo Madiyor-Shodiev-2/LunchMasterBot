@@ -48,6 +48,8 @@ class HandleTableAction
                 ScheduleCommandAction::scheduleStore($command);
             } elseif ($primaryKey == 'session_id'){
                 SessionCommandAction::sessionStore($command);
+            } elseif ($primaryKey == 'group_id'){
+                GroupCommandAction::groupStore($command);
             }
         } elseif ($command->argument('arg') == 'delete'){
             $method->destroy($command->option('id'));

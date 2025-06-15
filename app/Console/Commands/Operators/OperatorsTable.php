@@ -29,7 +29,7 @@ class OperatorsTable extends Command
     public function handle()
     {
         $handleAction = new HandleTableAction();
-        $method       = new Operator;
+        $method       = new Operator();
 
         $handleAction->getHandleTable(
             $this,

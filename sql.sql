@@ -11,10 +11,17 @@ Table Operators (
 -- is_supervisor позволяеть разделять от обычных пользователей и от супервайзера
 -- joinde_at позволяеть определять время присоединение в ланч
 
+Table LunchGroups {
+  group_id       SERIAL      PRIMARY KEY,
+  name           VARCHAR     NOT NULL
+}
+
+-- group_id нужно для того чтобы сгруппировать расписании
+-- name нужно чтобы обозначать как называеться группа
 
 Table LunchSchedules (
   schedule_id    SERIAL      PRIMARY KEY, 
-  name           VARCHAR     NOT NULL,           -- 
+  group_id       INT         REFERENCES LunchGroups(group_id),
   hour           INT         NOT NULL,            
   minute         INT         DEFAULT 0,
   max_per_round  INT         NOT NULL,           -- сколько человек за одну «раздачу»

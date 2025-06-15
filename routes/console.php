@@ -1,8 +1,13 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
+use App\Console\Commands\Notify\SendMessageToGroup;
+use App\Console\Commands\Notify\SendAllOperatorsCommand;
+use App\Console\Commands\Notify\SendAllSchedule;
+use App\Console\Commands\Notify\SendAllSessionsCommand;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Schedule::command(SendMessageToGroup::class)->everyMinute();
+// Schedule::command(SendAllOperatorsCommand::class)->everyMinute();
+Schedule::command(SendAllSessionsCommand::class)->everyMinute();
+// Schedule::command(SendAllSchedule::class)->everyMinute();

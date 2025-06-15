@@ -43,6 +43,7 @@ return [
                 App\Bot\Commands\StartCommand::class,
                 App\Bot\Commands\JoinCommand::class,
                 App\Bot\Commands\LunchCommand::class,
+                App\Bot\Commands\StatusCommand::class
             ],
         ],
 
@@ -195,6 +196,8 @@ return [
            ],
         */
     ],
+
+    'default_chat_id' => env('LUNCH_TELEGRAM_CHAT_ID'),
 
     /*
     |--------------------------------------------------------------------------
