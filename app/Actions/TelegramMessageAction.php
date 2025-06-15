@@ -2,8 +2,9 @@
 
 namespace App\Actions;
 
-use Illuminate\Support\Facades\Log;
 use Telegram\Bot\Commands\Command;
+use App\Domain\Models\TelegramGroup;
+use App\Domain\Models\TelegramPersonal;
 
 class TelegramMessageAction
 {
@@ -11,20 +12,10 @@ class TelegramMessageAction
     {
         switch ($userChatId) {
             case config('lunch.telegram_chat'):
-                Log::info("Телеграм группа: {$userChatId}", ['sendMessageSituation']);
-                $command->replyWithMessage([
-                    "chat_id" => $userChatId,
-                    "text"    => "Привет! Я LunchMasterBot. Я помогу тебе встать в очередь на обед"
-                ]);
+                TelegramGroup::sendMessageInGroup($command, $userChatId);
                 break;
             default:
-                Log::info("Телеграм личка:  {$userChatId} ", ['sendMessageSituation']);
-                $command->replyWithMessage([
-                    "chat_id" => $userChatId,
-                    "text"    => "Привет! Я LunchMasterBot. Я помогу тебе встать в очередь на обед:\n" .
-                        "/lunch — записаться в очередь\n" .
-                        "/queue — посмотреть очередь"
-                ]);
+                TelegramPersonal::sendMessageInPersonal($command, $userChatId);
         }
     }
 }

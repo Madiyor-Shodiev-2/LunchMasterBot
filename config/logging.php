@@ -58,6 +58,13 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        'errors' => [
+            'driver' => 'single',
+            'path'   => storage_path('logs/errors.log'),
+            'level'  => env('LOG_LEVEL', 'error'),
+            'days'   => 1
+        ],
+
         'single' => [
             'driver'               => 'single',
             'path'                 => storage_path('logs/laravel.log'),
@@ -125,8 +132,8 @@ return [
 
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
-        ],
+        ]
 
-    ],
+    ]
 
 ];

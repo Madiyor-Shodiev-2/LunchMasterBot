@@ -197,6 +197,8 @@ return [
         */
     ],
 
+    'default_chat_id' => env('LUNCH_TELEGRAM_CHAT_ID'),
+
     /*
     |--------------------------------------------------------------------------
     | Shared Commands [Optional]

@@ -9,20 +9,24 @@ use App\Models\Group;
 class GroupCommandAction
 {
     public static function groupStore(Command $command){
+       
         $lunchGroupName = $command->ask('Выберите имя для Ланч Группы');
 
-        $data = [
+        $validator = self::getValidator($data = [
             'name' => $lunchGroupName
-        ];
-
-        $validator = Validator::make($data, [
-            'name' => 'required|string|max:32'
-        ]);
+        ]); 
 
         if($validator->fails()){
             $command->error($validator->getMessageBag());
         } else {
             Group::create($data);
         }
+    }
+
+    private static function getValidator($data)
+    {
+        return Validator::make($data, [
+            'name' => 'required|string|max:32'
+        ]);
     }
 }
